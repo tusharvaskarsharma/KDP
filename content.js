@@ -1,65 +1,106 @@
-// Content Script - Passive Learning Tracker
+// Content Script - Learning Tracker
+console.log('🧠 KDP Content Script Loaded');
+
 let startTime = Date.now();
-let pageTitle = document.title;
-let pageUrl = window.location.href;
+let isTracking = false;
 
-// Learning domains ko filter karne ke liye
-const LEARNING_DOMAINS = [
-  'youtube.com/watch',
-  'coursera.org',
-  'udemy.com',
-  'khanacademy.org',
-  'edx.org',
-  'medium.com',
-  'stackoverflow.com',
-  'github.com',
-  'wikipedia.org',
-  'freecodecamp.org'
-];
-
-// Check if current page is a learning resource
-function isLearningPage() {
-  return LEARNING_DOMAINS.some(domain => pageUrl.includes(domain));
+// Start tracking when page loads
+function startTracking() {
+  if (isTracking) return;
+  isTracking = true;
+  startTime = Date.now();
+  console.log('▶️ Started tracking:', document.title);
 }
 
-// Extract meaningful text content
+// Extract meaningful content
 function extractContent() {
-  // Remove script, style tags
   const clone = document.body.cloneNode(true);
-  clone.querySelectorAll('script, style, nav, footer, header').forEach(el => el.remove());
   
-  let text = clone.innerText || '';
-  // Limit to 3000 characters to avoid API limits
-  return text.slice(0, 3000).trim();
+  // Remove unwanted elements
+  clone.querySelectorAll('script, style, nav, footer, header, iframe, .ad, .advertisement').forEach(el => el.remove());
+  
+  let text = clone.innerText || clone.textContent || '';
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  // Limit to 3000 characters
+  return text.slice(0, 3000);
 }
 
-// Tab visibility change handler
+// Track when user leaves page
+function trackSession() {
+  if (!isTracking) return;
+  
+  const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+  
+  console.log(`⏱️ Time spent: ${timeSpent}s`);
+  
+  // Track if spent more than 30 seconds
+  if (timeSpent >= 30) {
+    const content = extractContent();
+    
+    if (content.length > 100) {
+      const data = {
+        title: document.title,
+        url: window.location.href,
+        content: content,
+        timeSpent: timeSpent,
+        timestamp: Date.now()
+      };
+      
+      console.log('📤 Sending learning data to background...', {
+        title: data.title,
+        contentLength: content.length,
+        timeSpent: timeSpent
+      });
+      
+      // Send to background
+      chrome.runtime.sendMessage({
+        action: 'trackLearning',
+        data: data
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('❌ Message error:', chrome.runtime.lastError);
+        } else {
+          console.log('✅ Message sent successfully');
+        }
+      });
+    } else {
+      console.log('⏭️ Not enough content to track');
+    }
+  } else {
+    console.log('⏭️ Time too short (need 30s+)');
+  }
+  
+  // Reset for next tracking session
+  isTracking = false;
+}
+
+// Multiple tracking triggers
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    const timeSpent = Math.floor((Date.now() - startTime) / 1000); // seconds
-    
-    // Only track if spent more than 30 seconds AND it's a learning page
-    if (timeSpent >= 30 && isLearningPage()) {
-      const content = extractContent();
-      
-      if (content.length > 100) { // Minimum content threshold
-        chrome.runtime.sendMessage({
-          action: 'trackLearning',
-          data: {
-            title: pageTitle,
-            url: pageUrl,
-            content: content,
-            timeSpent: timeSpent,
-            timestamp: Date.now()
-          }
-        });
-      }
-    }
-    
-    // Reset timer for next visit
-    startTime = Date.now();
+    console.log('👁️ Page hidden - tracking session');
+    trackSession();
+  } else {
+    console.log('👁️ Page visible - restarting tracking');
+    startTime = Date.now(); // Reset start time
+    isTracking = true;
   }
 });
 
-// Initial message when content script loads
-console.log('🧠 KDP Active: Tracking learning sessions...');
+// Track when user navigates away
+window.addEventListener('beforeunload', () => {
+  console.log('🚪 Page unloading - tracking session');
+  trackSession();
+});
+
+// Start tracking immediately
+startTracking();
+
+// Debug: Log current page info
+console.log('📄 Current page:', {
+  title: document.title,
+  url: window.location.href,
+  contentLength: document.body.innerText.length
+});
