@@ -293,6 +293,216 @@
     .memory-list::-webkit-scrollbar-thumb:hover {
       background: #a0aec0;
     }
+
+    /* Card Actions */
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-view {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-view:hover {
+      background: #5568d3;
+    }
+
+    .btn-restore {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-restore:hover {
+      background: #38a169;
+    }
+
+    .btn-delete {
+      background: #fc8181;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #f56565;
+    }
+
+    .review-badge {
+      background: #bee3f8;
+      color: #2c5282;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 10px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #2d3748;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Subtopic Badge */
+    .subtopic-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+
+    /* Subtopics Container */
+    .subtopics-container {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px dashed #e2e8f0;
+    }
+
+    /* Subtopic Card */
+    .subtopic-card {
+      background: #f7fafc;
+      border-left: 3px solid;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+
+    .subtopic-card:hover {
+      background: #edf2f7;
+      transform: translateX(4px);
+    }
+
+    .subtopic-card.memory-strong {
+      border-left-color: #48bb78;
+    }
+
+    .subtopic-card.memory-review {
+      border-left-color: #ecc94b;
+    }
+
+    .subtopic-card.memory-forgotten {
+      border-left-color: #f56565;
+    }
+
+    .subtopic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .subtopic-score {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .subtopic-complexity {
+      font-size: 12px;
+    }
+
+    .subtopic-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .subtopic-concepts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .mini-concept {
+      background: #e6fffa;
+      color: #234e52;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .subtopic-summary {
+      font-size: 11px;
+      color: #718096;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .subtopic-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+    }
+
+    .subtopic-time {
+      color: #a0aec0;
+    }
+
+    .subtopic-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .subtopic-link:hover {
+      color: #764ba2;
+    }
+
+    /* Expand Button */
+    .btn-expand {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-expand:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #6a4296 100%);
+    }
   </style>
 </head>
 <body>
@@ -302,7 +512,12 @@
         <h1>🧠 Knowledge Decay</h1>
         <p class="tagline">We predict forgetting, not just learning</p>
       </div>
-      <button id="clearBtn" class="btn-clear" title="Clear all data">🗑️</button>
+      <div class="header-actions">
+        <button id="exportBtn" class="btn-icon" title="Export Data">💾</button>
+        <button id="importBtn" class="btn-icon" title="Import Data">📥</button>
+        <button id="clearBtn" class="btn-icon" title="Clear all data">🗑️</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display: none;">
     </header>
 
     <div class="stats-grid">
